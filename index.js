@@ -6,27 +6,33 @@ const app = express();
 const server = http.createServer(app);
 
 const io = new Server(server, {
-  cors: { origin: "*" },
+  cors: { origin: "*" }
 });
 
-let startTime = Date.now();
+// health check (optional)
+app.get("/", (req, res) => {
+  res.send("Ventilator backend running");
+});
 
-// Smooth breathing waveform
-function pressureWave(t) {
-  return 18 + 7 * Math.sin(t / 800);
-}
+io.on("connection", (socket) => {
+  console.log("Doctor connected:", socket.id);
 
-// Send data every 100 ms
-setInterval(() => {
-  const now = Date.now();
+  const interval = setInterval(() => {
+    const pressure = Math.floor(Math.random() * 20) + 10;
 
-  io.emit("ventilatorData", {
-    pressure: pressureWave(now - startTime),
-    timestamp: now,
+    socket.emit("ventilatorData", {
+      pressure,
+      timestamp: Date.now()
+    });
+  }, 1000);
+
+  socket.on("disconnect", () => {
+    clearInterval(interval);
+    console.log("Doctor disconnected");
   });
-}, 100);
+});
 
-const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => console.log("Backend running"));
-
+server.listen(3000, () => {
+  console.log("Server running on port 3000");
+});
 
