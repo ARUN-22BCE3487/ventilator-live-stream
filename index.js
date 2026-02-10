@@ -5,38 +5,28 @@ const { Server } = require("socket.io");
 const app = express();
 const server = http.createServer(app);
 
-// ✅ Enable CORS for Socket.IO
 const io = new Server(server, {
   cors: { origin: "*" },
 });
 
-app.use(express.static("public"));
+let startTime = Date.now();
 
-io.on("connection", (socket) => {
-  console.log("Doctor connected:", socket.id);
+// Smooth breathing waveform
+function pressureWave(t) {
+  return 18 + 7 * Math.sin(t / 800);
+}
 
-  socket.on("disconnect", () => {
-    console.log("Doctor disconnected:", socket.id);
-  });
-
-  // Optional: send a welcome message
-  socket.emit("ventilatorData", { message: "Connected to server!" });
-});
-
-// 🔴 Send ventilator data every second
+// Send data every 100 ms
 setInterval(() => {
-  const pressure =
-    12 + Math.sin(Date.now() / 200) * 8 + Math.random();
+  const now = Date.now();
 
   io.emit("ventilatorData", {
-    pressure: Number(pressure.toFixed(2)),
-    timestamp: Date.now(),
+    pressure: pressureWave(now - startTime),
+    timestamp: now,
   });
-}, 15);
+}, 100);
 
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => console.log("Server running on port", PORT));
-
-
+server.listen(PORT, () => console.log("Backend running"));
 
 
