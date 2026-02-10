@@ -25,14 +25,14 @@ io.on("connection", (socket) => {
 
 // 🔴 Send ventilator data every second
 setInterval(() => {
-  const ventilatorData = {
-    pressure: 15 + Math.random() * 10,
-    timestamp: Date.now(), // use timestamp for consistency
-  };
+  const pressure =
+    12 + Math.sin(Date.now() / 200) * 8 + Math.random();
 
-  io.emit("ventilatorData", ventilatorData); // match frontend event name
-  console.log("Data sent:", ventilatorData);
-}, 1000);
+  io.emit("ventilatorData", {
+    pressure: Number(pressure.toFixed(2)),
+    timestamp: Date.now(),
+  });
+}, 15);
 
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => console.log("Server running on port", PORT));
