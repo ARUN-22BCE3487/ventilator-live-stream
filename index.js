@@ -17,14 +17,23 @@ app.get("/", (req, res) => {
 io.on("connection", (socket) => {
   console.log("Doctor connected:", socket.id);
 
+  let time = 0;
+
   const interval = setInterval(() => {
-    const pressure = Math.floor(Math.random() * 20) + 10;
+    // Simulated breathing cycle (realistic ventilator waveform)
+    const pressure = 20 + 8 * Math.sin(time);
+    const flow = 40 * Math.sin(time);
+    const volume = 400 + 150 * Math.sin(time);
 
     socket.emit("ventilatorData", {
-      pressure,
+      pressure: Number(pressure.toFixed(2)),
+      flow: Number(flow.toFixed(2)),
+      volume: Number(volume.toFixed(2)),
       timestamp: Date.now()
     });
-  }, 1000);
+
+    time += 0.2; // controls breathing speed
+  }, 100); // 100ms update (smooth wave)
 
   socket.on("disconnect", () => {
     clearInterval(interval);
